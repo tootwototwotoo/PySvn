@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+# @Author: luanminjie
+# @Date:   2019-04-17 14:34:04
+# @Last Modified by:   luanminjie
+# @Last Modified time: 2020-05-22 21:22:58
 import collections
 import logging
 import os
@@ -285,23 +290,26 @@ class CommonClient(svn.common_base.CommonBase):
 
         self.run_command('export', cmd)
 
-    def list(self, extended=False, rel_path=None):
+    def list(self, extended=False, rel_path=None, recursive=False):
         full_url_or_path = self.__url_or_path
         if rel_path is not None:
             full_url_or_path += '/' + rel_path
-
+        params = [full_url_or_path]
+        if recursive:
+            params = ['-R'] + params
         if extended is False:
             for line in self.run_command(
                     'ls',
-                    [full_url_or_path]):
+                    params):
                 line = line.strip()
                 if line:
                     yield line
 
         else:
+            params = ['--xml'] + params
             raw = self.run_command(
                 'ls',
-                ['--xml', full_url_or_path],
+                params,
                 do_combine=True)
 
             root = xml.etree.ElementTree.fromstring(raw)
